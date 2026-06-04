@@ -59,16 +59,21 @@ io.on("connection", (socket) => {
     socket.on("join-room", (roomId) => {
         const room = rooms[roomId];
         if (!room) {
-            socket.emit("error", "Room does not exist");
+            socket.emit("room-error", "Room does not exist");
             return;
         }
         if (room.players.length >= 2) {
-            socket.emit("error", "Room is already full");
+            socket.emit("room-error", "Room is already full");
             return;
         }
         room.players.push(socket.id);
         socket.join(roomId);
-        io.to(roomId).emit("Game Starts");
+        const { board, turn } = rooms[roomId];
+        io.to(roomId).emit("start-game", {
+            roomId,
+            board,
+            turn
+        });
     })
 
     socket.on("make-move", ({ roomId, index }) => {
